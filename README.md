@@ -6,7 +6,7 @@ This repository contains Arduino, ESP32, C++ codebases, hardware design, mechani
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Hot_Wheels_RC/
@@ -17,16 +17,16 @@ Hot_Wheels_RC/
 └── doc/                    → Documentation for both codebases
 ```
 
-## 🚀 Collaboration Guidelines
+## Collaboration Guidelines
 
 To ensure smooth teamwork:
 
-- ✅ **Commit, pull, and push frequently** to keep everyone on the same page.
-- 🌿 **Create a branch** for any experimental or testing-specific changes. Once stable, we can discuss merging them into the main codebase.
-- 💬 If you have questions, feel free to reach out to Shea (LewdLogicc)
+- **Commit, pull, and push frequently** to keep everyone on the same page.
+- **Create a branch** for any experimental or testing-specific changes. Once stable, we can discuss merging them into the main codebase.
+- If you have questions, feel free to reach out to Aron or Joshan
 
 
 ---
 
-✍️ Contributors:  
-- **Shea**
+Contributors:  
+- **Shea, Aron**
