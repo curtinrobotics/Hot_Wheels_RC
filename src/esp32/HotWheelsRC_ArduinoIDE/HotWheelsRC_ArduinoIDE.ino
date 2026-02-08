@@ -16,6 +16,7 @@ ControllerPtr myController = nullptr;
 int currentAngle = 90;     // Start at center position
 int targetAngle = 90;      // Target angle from joystick
 const int DEADZONE = 50;   // Joystick deadzone to prevent jitter
+bool INVERT_STEERING = false;
 
 // PWM timing variables
 unsigned long lastPWMTime = 0;
@@ -91,7 +92,14 @@ void processController() {
         }
         
         // Map joystick input to servo angle (0-180 degrees)
-        targetAngle = map(axisX, -511, 512, 180, 0);
+        if (abs(axisX) < DEADZONE) {
+            targetAngle = 90;
+            } else {
+                if (INVERT_STEERING)
+                    targetAngle = map(axisX, -511, 511, 0, 180);
+                else
+                    targetAngle = map(axisX, -511, 511, 180, 0);
+            }
         
         // Optional: Limit servo range for your specific setup
         // targetAngle = map(axisX, -511, 512, 60, 120); // Limited range
