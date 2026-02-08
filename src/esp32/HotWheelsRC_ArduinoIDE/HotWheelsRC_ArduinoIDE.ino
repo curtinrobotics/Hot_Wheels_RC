@@ -91,7 +91,7 @@ void processController() {
         }
         
         // Map joystick input to servo angle (0-180 degrees)
-        targetAngle = map(axisX, -511, 512, 0, 180);
+        targetAngle = map(axisX, -511, 512, 180, 0);
         
         // Optional: Limit servo range for your specific setup
         // targetAngle = map(axisX, -511, 512, 60, 120); // Limited range
