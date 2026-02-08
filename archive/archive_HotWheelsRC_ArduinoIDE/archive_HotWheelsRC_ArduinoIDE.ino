@@ -18,6 +18,15 @@ int targetAngle = 90;      // Target angle from joystick
 const int DEADZONE = 50;   // Joystick deadzone to prevent jitter
 bool INVERT_STEERING = false;
 
+// ===== MOTOR (DRV8833) =====
+#define MOTOR_IN1 12
+#define MOTOR_IN2 11
+#define MOTOR_PWM_CH 1
+#define MOTOR_PWM_FREQ 20000
+#define MOTOR_PWM_RES 8
+#define TRIGGER_NEUTRAL 0
+#define TRIGGER_DEADBAND 0
+
 // PWM timing variables
 unsigned long lastPWMTime = 0;
 const int PWM_PERIOD = 20; // 20ms period for 50Hz
@@ -61,6 +70,18 @@ void setup() {
     // Set initial position
     currentAngle = 90;
     targetAngle = 90;
+
+    // Motor pins
+    pinMode(MOTOR_IN1, OUTPUT);
+    pinMode(MOTOR_IN2, OUTPUT);
+
+    // PWM setup for speed control
+    ledcSetup(MOTOR_PWM_CH, MOTOR_PWM_FREQ, MOTOR_PWM_RES);
+    ledcAttachPin(MOTOR_IN1, MOTOR_PWM_CH);
+
+    // stop motor initially
+    digitalWrite(MOTOR_IN2, LOW);
+    ledcWrite(MOTOR_PWM_CH, 0);
     
     Serial.println("Setup complete. Waiting for Controller...");
     Serial.println("Tip: Use left joystick X-axis for steering");
@@ -117,12 +138,52 @@ void processController() {
     }
 }
 
+
+void processThrottle() {
+    if (!(myController && myController->isConnected()))
+        return;
+
+    int rt = myController->throttle(); // 0–1023
+    int lt = myController->brake();    // 0–1023
+
+    int throttle = rt - lt;  // ← THIS IS THE KEY LINE
+
+    // --- NEUTRAL ---
+    if (abs(throttle) < TRIGGER_DEADBAND) {
+        ledcWrite(MOTOR_PWM_CH, 0);
+        digitalWrite(MOTOR_IN2, LOW);
+        return;
+    }
+
+    // --- FORWARD ---
+    if (throttle > 0) {
+        int speed = map(throttle, TRIGGER_DEADBAND, 1023, 0, 255);
+        speed = constrain(speed, 0, 255);
+
+        digitalWrite(MOTOR_IN2, LOW);
+        ledcWrite(MOTOR_PWM_CH, speed);
+    }
+    // --- REVERSE ---
+    else {
+        int speed = map(-throttle, TRIGGER_DEADBAND, 1023, 255, 0);
+        speed = constrain(speed, 0, 255);
+
+        digitalWrite(MOTOR_IN2, HIGH);
+        ledcWrite(MOTOR_PWM_CH, speed);
+    }
+
+    Serial.print("RT: "); Serial.print(rt);
+    Serial.print(" LT: "); Serial.print(lt);
+    Serial.print(" Throttle: "); Serial.println(throttle);
+}
+
 void loop() {
     // This call fetches all the controller's data
     BP32.update();
     
     // Process controller input if connected
     processController();
+    processThrottle();
     
     // Send PWM pulse every 20ms (50Hz)
     unsigned long currentTime = millis();
