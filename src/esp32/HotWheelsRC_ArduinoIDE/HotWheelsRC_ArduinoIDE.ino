@@ -7,7 +7,7 @@
 #include <Bluepad32.h>
 
 // Servo setup
-const int SERVO_PIN = 18;  // Change to your actual servo pin
+const int SERVO_PIN = 9;  // Change to your actual servo pin
 
 // Controller variables
 ControllerPtr myController = nullptr;
