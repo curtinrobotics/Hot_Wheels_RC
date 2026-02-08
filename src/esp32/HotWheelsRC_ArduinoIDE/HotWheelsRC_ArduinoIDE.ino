@@ -51,7 +51,7 @@ void setup() {
     
     // Initialize Bluepad32
     BP32.setup(&onConnectedController, &onDisconnectedController);
-    BP32.forgetBluetoothKeys(); // Remove this line if you don't want to forget paired devices
+    // BP32.forgetBluetoothKeys(); // Remove this line if you don't want to forget paired devices
     
     // Initialize servo pin
     pinMode(SERVO_PIN, OUTPUT);
