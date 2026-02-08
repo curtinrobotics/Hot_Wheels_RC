@@ -62,7 +62,7 @@ void setup() {
     currentAngle = 90;
     targetAngle = 90;
     
-    Serial.println("Setup complete. Waiting for Xbox controller...");
+    Serial.println("Setup complete. Waiting for Controller...");
     Serial.println("Use left joystick X-axis for steering");
 }
 
