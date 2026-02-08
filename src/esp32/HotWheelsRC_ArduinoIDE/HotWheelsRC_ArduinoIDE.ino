@@ -63,7 +63,7 @@ void setup() {
     targetAngle = 90;
     
     Serial.println("Setup complete. Waiting for Controller...");
-    Serial.println("Use left joystick X-axis for steering");
+    Serial.println("Tip: Use left joystick X-axis for steering");
 }
 
 float angleToERS(int angle) {
