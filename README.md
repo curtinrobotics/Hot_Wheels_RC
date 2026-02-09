@@ -10,11 +10,12 @@ This repository contains Arduino, ESP32, C++ codebases, hardware design, mechani
 
 ```
 Hot_Wheels_RC/
-├── src/
-│   ├── esp32/              → ESP32 source code
-│   ├── arduino/            → Arduino source code
-|   ├── hardware_design/    → Hardware design files
-└── doc/                    → Documentation for both codebases
+├── archive/                    -> archival assests, may be still relevant
+├── docs/                       -> Documentation for the project
+├── hardware_design/            -> CAD and schematic files for the hardware components
+│   ├── Hot_Wheels_3d_model/    -> 3D model exported files (e.g., .stl, .step) for manufacturing and prototyping
+│   └── Hot_Wheels_3d_model.f3d -> Fusion 360 CAD file (requires Fusion 360 to open)
+├── Hot_Wheels_arduino_firmware/ -> Arduino firmware source code
 ```
 
 ## Collaboration Guidelines
