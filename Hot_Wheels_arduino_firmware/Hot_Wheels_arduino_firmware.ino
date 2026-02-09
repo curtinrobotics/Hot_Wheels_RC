@@ -31,6 +31,9 @@ const int TRIGGER_MAX = 1023;
 const int SERVO_MIN_US = 1000;
 const int SERVO_MAX_US = 2000;
 
+// Steering limit (degrees from center=90). Example: 30 -> range 60..120
+const int STEER_LIMIT_DEG = 65;
+
 void onConnectedController(ControllerPtr ctl) {
   if (myController == nullptr) {
     Serial.print("CALLBACK: Controller is connected, index=");
@@ -72,7 +75,11 @@ void processController() {
     Drive = throttle;
     Reverse = brake;
 
-    angle = map(axisX, -511, 512, 180, 0);
+    const int leftLimit = 90 + STEER_LIMIT_DEG;
+    const int rightLimit = 90 - STEER_LIMIT_DEG;
+
+    angle = map(axisX, -511, 512, leftLimit, rightLimit);
+    angle = constrain(angle, rightLimit, leftLimit);
   }
 }
 
