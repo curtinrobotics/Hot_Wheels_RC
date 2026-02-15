@@ -21,7 +21,7 @@ int Reverse = 0;
 int angle = 90;
 
 const int DEADZONE = 30;
-const int SPEED_LIMIT_PERCENT = 40;  // Limit speed to 40% of max
+const int SPEED_LIMIT_PERCENT = 100;  // Limit speed to 40% of max
 
 // Trigger threshold and mapping
 const int TRIGGER_DEADZONE = 10;
@@ -32,7 +32,7 @@ const int SERVO_MIN_US = 1000;
 const int SERVO_MAX_US = 2000;
 
 // Steering limit (degrees from center=90). Example: 30 -> range 60..120
-const int STEER_LIMIT_DEG = 65;
+const int STEER_LIMIT_DEG = 90;
 
 void onConnectedController(ControllerPtr ctl) {
   if (myController == nullptr) {
