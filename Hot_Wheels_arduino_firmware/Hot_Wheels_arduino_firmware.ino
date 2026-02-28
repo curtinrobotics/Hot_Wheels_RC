@@ -1,8 +1,8 @@
 #include <Bluepad32.h>
 
-const int servoPin = 9;
-const int Forward = 12;
-const int Back = 11;
+const int servoPin = 32;
+const int Forward = 25;
+const int Back = 33;
 
 // PWM Configuration for motors
 const int PWM_FREQ = 5000;     // 5 KHz PWM frequency for motors
@@ -130,6 +130,10 @@ void setup() {
 
   BP32.setup(&onConnectedController, &onDisconnectedController);
   BP32.forgetBluetoothKeys();
+
+  // Turn on motor driver
+  pinMode(12, OUTPUT);
+    digitalWrite(12, HIGH);
 
   // Setup PWM for motor control
   ledcSetup(FORWARD_PWM_CHANNEL, PWM_FREQ, PWM_RESOLUTION);
