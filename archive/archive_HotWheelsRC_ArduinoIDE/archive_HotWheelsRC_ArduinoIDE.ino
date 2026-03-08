@@ -17,6 +17,8 @@ int currentAngle = 90;     // Start at center position
 int targetAngle = 90;      // Target angle from joystick
 const int DEADZONE = 50;   // Joystick deadzone to prevent jitter
 bool INVERT_STEERING = false;
+// Steering limit (degrees from center=90). Example: 30 -> range 60..120
+const int STEER_LIMIT_DEG = 35;
 
 // ===== MOTOR (DRV8833) =====
 #define MOTOR_IN1 12
@@ -112,15 +114,20 @@ void processController() {
             axisX = 0;
         }
         
-        // Map joystick input to servo angle (0-180 degrees)
-        if (abs(axisX) < DEADZONE) {
+        // Map joystick input to servo angle with steering limits
+        const int leftLimit = 90 + STEER_LIMIT_DEG;
+        const int rightLimit = 90 - STEER_LIMIT_DEG;
+
+        if (axisX == 0) {
             targetAngle = 90;
             } else {
                 if (INVERT_STEERING)
-                    targetAngle = map(axisX, -511, 511, 0, 180);
+                    targetAngle = map(axisX, -511, 511, rightLimit, leftLimit);
                 else
-                    targetAngle = map(axisX, -511, 511, 180, 0);
+                    targetAngle = map(axisX, -511, 511, leftLimit, rightLimit);
             }
+
+        targetAngle = constrain(targetAngle, rightLimit, leftLimit);
         
         // Optional: Limit servo range for your specific setup
         // targetAngle = map(axisX, -511, 512, 60, 120); // Limited range
