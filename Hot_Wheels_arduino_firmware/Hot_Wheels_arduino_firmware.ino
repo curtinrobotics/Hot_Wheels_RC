@@ -1,4 +1,9 @@
 #include <Bluepad32.h>
+#include <Preferences.h>
+
+// Preferences prefs;
+const char* NVS_NAMESPACE = "hwrc";
+const char* NVS_KEY_STEER_TRIM = "trim";
 
 const int servoPin = 9;
 const int Forward = 12;
@@ -30,6 +35,7 @@ const bool TRIM_LATCH_START_STATE = false; // set both latches true/false at sta
 bool lastTrimLB = TRIM_LATCH_START_STATE;
 bool lastTrimRB = TRIM_LATCH_START_STATE;
 bool lastDpadUp = TRIM_LATCH_START_STATE;
+bool lastTrimFactoryResetCombo = TRIM_LATCH_START_STATE;
 
 const int DEADZONE = 30;
 const int SPEED_LIMIT_PERCENT = 100;  // Limit speed to 40% of max
@@ -45,6 +51,17 @@ const int SERVO_MAX_US = 2000;
 // Steering limit (degrees from center=90). Example: 30 -> range 60..120
 const int STEER_LIMIT_DEG = 90;
 
+static void loadSteeringTrim() {
+  STEERING_TRIM_DEG = prefs.getInt(NVS_KEY_STEER_TRIM, 0);
+  STEERING_TRIM_DEG = constrain(STEERING_TRIM_DEG, -TRIM_LIMIT_DEG, TRIM_LIMIT_DEG);
+  Serial.printf("Loaded steering trim: %+d deg\n", STEERING_TRIM_DEG);
+}
+
+static void saveSteeringTrim() {
+  STEERING_TRIM_DEG = constrain(STEERING_TRIM_DEG, -TRIM_LIMIT_DEG, TRIM_LIMIT_DEG);
+  prefs.putInt(NVS_KEY_STEER_TRIM, STEERING_TRIM_DEG);
+}
+
 void onConnectedController(ControllerPtr ctl) {
   if (myController == nullptr) {
     Serial.print("CALLBACK: Controller is connected, index=");
@@ -55,6 +72,7 @@ void onConnectedController(ControllerPtr ctl) {
     lastTrimLB = TRIM_LATCH_START_STATE;
     lastTrimRB = TRIM_LATCH_START_STATE;
     lastDpadUp = TRIM_LATCH_START_STATE;
+    lastTrimFactoryResetCombo = TRIM_LATCH_START_STATE;
 
     ctl->setColorLED(0, 255, 0);
   }
@@ -71,6 +89,7 @@ void onDisconnectedController(ControllerPtr ctl) {
     lastTrimLB = TRIM_LATCH_START_STATE;
     lastTrimRB = TRIM_LATCH_START_STATE;
     lastDpadUp = TRIM_LATCH_START_STATE;
+    lastTrimFactoryResetCombo = TRIM_LATCH_START_STATE;
 
     // Stop motors when controller disconnects
     ledcWrite(FORWARD_PWM_CHANNEL, 0);
@@ -96,25 +115,45 @@ void processController() {
     // D-pad up resets trim (edge-triggered)
     const bool dpadUp = (myController->dpad() & DPAD_UP) != 0;
 
-    if (lb && !lastTrimLB) {
-      STEERING_TRIM_DEG += TRIM_STEP_DEG;
-      STEERING_TRIM_DEG = constrain(STEERING_TRIM_DEG, -TRIM_LIMIT_DEG, TRIM_LIMIT_DEG);
-      Serial.printf("Steering trim: %+d deg\n", STEERING_TRIM_DEG);
-    }
-    if (rb && !lastTrimRB) {
-      STEERING_TRIM_DEG -= TRIM_STEP_DEG;
-      STEERING_TRIM_DEG = constrain(STEERING_TRIM_DEG, -TRIM_LIMIT_DEG, TRIM_LIMIT_DEG);
-      Serial.printf("Steering trim: %+d deg\n", STEERING_TRIM_DEG);
-    }
+    // Factory reset combo: LB + RB + D-pad Up clears saved trim (edge-triggered)
+    const bool trimFactoryResetCombo = lb && rb && dpadUp;
 
-    if (dpadUp && !lastDpadUp) {
+    bool trimChanged = false;
+
+    if (trimFactoryResetCombo && !lastTrimFactoryResetCombo) {
       STEERING_TRIM_DEG = 0;
-      Serial.println("Steering trim reset: 0 deg");
+      prefs.remove(NVS_KEY_STEER_TRIM);
+      Serial.println("Steering trim factory reset: cleared saved value");
+    } else {
+
+      if (lb && !lastTrimLB) {
+        STEERING_TRIM_DEG += TRIM_STEP_DEG;
+        STEERING_TRIM_DEG = constrain(STEERING_TRIM_DEG, -TRIM_LIMIT_DEG, TRIM_LIMIT_DEG);
+        Serial.printf("Steering trim: %+d deg\n", STEERING_TRIM_DEG);
+        trimChanged = true;
+      }
+      if (rb && !lastTrimRB) {
+        STEERING_TRIM_DEG -= TRIM_STEP_DEG;
+        STEERING_TRIM_DEG = constrain(STEERING_TRIM_DEG, -TRIM_LIMIT_DEG, TRIM_LIMIT_DEG);
+        Serial.printf("Steering trim: %+d deg\n", STEERING_TRIM_DEG);
+        trimChanged = true;
+      }
+
+      if (dpadUp && !lastDpadUp) {
+        STEERING_TRIM_DEG = 0;
+        Serial.println("Steering trim reset: 0 deg");
+        trimChanged = true;
+      }
+
+      if (trimChanged) {
+        saveSteeringTrim();
+      }
     }
 
     lastTrimLB = lb;
     lastTrimRB = rb;
     lastDpadUp = dpadUp;
+    lastTrimFactoryResetCombo = trimFactoryResetCombo;
 
     if (abs(axisX) < DEADZONE) {
       axisX = 0;
@@ -178,6 +217,9 @@ void updateMotorSpeed() {
 void setup() {
   Serial.begin(115200);
   Serial.println("Starting RC Car Controller...");
+
+  prefs.begin(NVS_NAMESPACE, false);
+  loadSteeringTrim();
 
   BP32.setup(&onConnectedController, &onDisconnectedController);
   BP32.forgetBluetoothKeys();
