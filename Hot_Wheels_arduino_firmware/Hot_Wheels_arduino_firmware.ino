@@ -1,7 +1,7 @@
 #include <Bluepad32.h>
 #include <Preferences.h>
 
-// Preferences prefs;
+Preferences prefs;
 const char* NVS_NAMESPACE = "hwrc";
 const char* NVS_KEY_STEER_TRIM = "trim";
 
