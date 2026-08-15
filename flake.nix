@@ -70,7 +70,10 @@
           inherit system overlays;
         };
 
-        globalExcludes = [ ".direnv/**" ];
+        globalExcludes = [
+          ".direnv/**"
+          "Hot_Wheels_Electronics/libraries/**"
+        ];
 
         markdownlintConfig = pkgs.writeText "hot-wheels.markdownlint-cli2.jsonc" (
           builtins.toJSON {
